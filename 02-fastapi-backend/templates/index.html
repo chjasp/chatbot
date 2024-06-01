@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chatbot Test</title>
+  <style>
+    #chatbox {
+      height: 300px;
+      width: 400px;
+      border: 1px solid #ccc;
+      overflow-y: scroll;
+      padding: 10px;
+    }
+    .message {
+      margin-bottom: 10px;
+      padding: 5px;
+      border-radius: 5px;
+    }
+    .user-message { background-color: lightblue; }
+    .bot-message { background-color: lightgreen; }
+  </style>
+</head>
+<body>
+  <div id="chatbox"></div>
+  <input type="text" id="message-input">
+  <button onclick="sendMessage()">Send</button>
+
+  <script>
+    const chatbox = document.getElementById("chatbox");
+    const messageInput = document.getElementById("message-input");
+    const backendUrl = "http://127.0.0.1:8000/chat";  // Replace with your actual backend URL
+
+    async function sendMessage() {
+      const message = messageInput.value;
+      if (message.trim() === "") return; 
+
+      // Display user message
+      const userMessageElement = document.createElement("div");
+      userMessageElement.classList.add("message", "user-message");
+      userMessageElement.textContent = message;
+      chatbox.appendChild(userMessageElement);
+      messageInput.value = ""; // Clear input
+
+      // Send message to backend
+      const response = await fetch(backendUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [
+            {"role": "user", "content": message}
+          ]
+        }),
+      });
+      const data = await response.json();
+
+      // Display bot response
+      const botMessageElement = document.createElement("div");
+      botMessageElement.classList.add("message", "bot-message");
+      botMessageElement.textContent = data.response;
+      chatbox.appendChild(botMessageElement);
+
+      // Scroll to bottom
+      chatbox.scrollTop = chatbox.scrollHeight;
+    }
+  </script>
+</body>
+</html>
