@@ -3,3 +3,4 @@ uvicorn
 google-cloud-storage
 google-generativeai
 python-dotenv
+google-cloud-firestore

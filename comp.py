@@ -96,14 +96,6 @@ async def summarize(request: SummarizeRequest):
         blob = bucket.blob(file_name)
         if not blob.exists():
             return {"response": "error", "detail": "File not found"}
-
-        document_content = blob.download_as_text()
-        prompt = get_prompt("summarization", document_content=document_content)
-
-        response = model.generate_content(prompt)
-
-        doc_ref = db.collection("doc-metadata").document(file_name)
-        doc_ref.set({"summary": response.text, "file_name": file_name}) 
     except Exception as e:
         return {"response": "error", "detail": f"An error occurred: {e}"}
 
