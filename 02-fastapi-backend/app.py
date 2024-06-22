@@ -1,4 +1,5 @@
 import os
+import uvicorn
 import google.generativeai as genai
 
 from dotenv import load_dotenv
@@ -8,7 +9,7 @@ from google.cloud import firestore
 from pydantic import BaseModel
 
 from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -26,7 +27,7 @@ templates = Jinja2Templates(directory="templates")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173"],  # Explicitly allow your frontend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -35,13 +36,35 @@ app.add_middleware(
 class SummarizeRequest(BaseModel):
     file_name: str
 
+@app.options("/{rest_of_path:path}")
+async def preflight_handler(request: Request, rest_of_path: str):
+    response = Response()
+    response.headers["Access-Control-Allow-Origin"] = "http://localhost:5173"
+    response.headers["Access-Control-Allow-Methods"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    return response
 
 @app.get("/", response_class=HTMLResponse)
 async def get_index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
-@app.post("/chat")
+@app.post("/chat-direct")
+async def chat_direct(messages: dict):
+    print(messages)
+    chat_messages = messages["messages"]
+    print("L5")
+    print(chat_messages)
+    prompt = get_prompt("chat_direct", user_message=chat_messages[-1]["content"], chat_history=chat_messages[:-1])
+    response = model.generate_content(prompt)
+    print("History")
+    print(chat_messages[:-1])
+    print("Response")
+    print(response.text)
+    return {"response": response.text}
+
+
+@app.post("/chat-context")
 async def chat(messages: dict):
     user_message = messages["messages"][-1]["content"]
     
@@ -78,7 +101,7 @@ async def chat(messages: dict):
     full_message_history = "\n".join(
         [f"{m['role']}: {m['content']}" for m in messages["messages"]]
     )
-    prompt = get_prompt("chat", chat_history=full_message_history, context=context)
+    prompt = get_prompt("chat_context", chat_history=full_message_history, context=context)
     response = model.generate_content(prompt)
 
     # Add context prefix to the response if context was provided

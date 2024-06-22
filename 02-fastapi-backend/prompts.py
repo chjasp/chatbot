@@ -1,5 +1,9 @@
 prompts = {
-    "chat": """You are a helpful AI assistant for a company. You will be given a chat history and (potentially) some additional context. Based on that, answer the user's last message.
+    "chat_direct": """You are a helpful AI assistant. Please continue this conversation, considering the last 5 interactions.
+    Chat history: {chat_history}
+    User: {user_message}
+    Assistant:""",
+    "chat_context": """You are a helpful AI assistant for a company. You will be given a chat history and (potentially) some additional context. Based on that, answer the user's last message.
     Chat history: {chat_history}
     Context: {context}""",
     "summarization": "Please summarize the following document in 2 concise sentences: {document_content}",
