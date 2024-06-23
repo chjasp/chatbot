@@ -1,3 +1,5 @@
+// Greeting.jsx
+
 import React, { useContext } from "react";
 import { Context } from "../../context/Context";
 import "./Greeting.css";

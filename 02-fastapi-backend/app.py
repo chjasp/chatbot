@@ -1,6 +1,7 @@
 import os
 import uvicorn
-import google.generativeai as genai
+import vertexai
+from vertexai.generative_models import GenerativeModel
 
 from dotenv import load_dotenv
 from google.cloud import storage
@@ -9,59 +10,41 @@ from google.cloud import firestore
 from pydantic import BaseModel
 
 from fastapi import FastAPI, Request, HTTPException, Depends
-from fastapi.responses import HTMLResponse, Response
-from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse, Response, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
-
 from prompts import get_prompt
 
 load_dotenv()
-genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+vertexai.init(project=os.environ["GEMINI_PROJECT_ID"], location="europe-west3")
 storage_client = storage.Client(project=os.environ["PROJECT_ID"])
 bucket = storage_client.bucket(os.environ["BUCKET_NAME"])
-model = genai.GenerativeModel("gemini-1.5-flash-latest")
+model = GenerativeModel(model_name=os.environ["GEMINI_MODEL"])
 db = firestore.Client(
     project=os.environ["PROJECT_ID"], database=os.environ["FIRESTORE_DB"])
 
 app = FastAPI()
-templates = Jinja2Templates(directory="templates")
+app.mount('/static', StaticFiles(directory="./build/static"), 'static')
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Explicitly allow your frontend
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins=["*"],  # Explicitly allow your frontend
     allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-
 class SummarizeRequest(BaseModel):
     file_name: str
-
-
-@app.options("/{rest_of_path:path}")
-async def preflight_handler(request: Request, rest_of_path: str):
-    response = Response()
-    response.headers["Access-Control-Allow-Origin"] = "http://localhost:5173"
-    response.headers["Access-Control-Allow-Methods"] = "*"
-    response.headers["Access-Control-Allow-Headers"] = "*"
-    return response
-
 
 def get_user_id(token: str = "chjasp"):
     # In a real application, you would validate the token and extract the user ID
     # For now, we'll just return a hardcoded user ID
     return "chjasp"
 
-
-@app.get("/", response_class=HTMLResponse)
-async def get_index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
-
-@app.post("/save-chat")
+@app.post("/api/save-chat")
 async def save_chat(chat_data: dict, user_id: str = Depends(get_user_id)):
     chat_ref = db.collection("chats").document(user_id)
     # Add a timestamp to the chat
@@ -74,7 +57,7 @@ async def save_chat(chat_data: dict, user_id: str = Depends(get_user_id)):
     chat_ref.set(chat_data_with_timestamp, merge=True)
     return {"status": "success"}
 
-@app.get("/get-chat")
+@app.get("/api/get-chat")
 async def get_chat(user_id: str = Depends(get_user_id)):
     chat_ref = db.collection("chats").document(user_id)
     chat_doc = chat_ref.get()
@@ -87,7 +70,7 @@ async def get_chat(user_id: str = Depends(get_user_id)):
     else:
         return {"chats": {}}
 
-@app.delete("/delete-chat/{chat_id}")
+@app.delete("/api/delete-chat/{chat_id}")
 async def delete_chat(chat_id: str, user_id: str = Depends(get_user_id)):
     chat_ref = db.collection("chats").document(user_id)
     chat_doc = chat_ref.get()
@@ -99,23 +82,16 @@ async def delete_chat(chat_id: str, user_id: str = Depends(get_user_id)):
             return {"status": "success", "message": "Chat deleted successfully"}
     return {"status": "error", "message": "Chat not found"}
 
-@app.post("/chat-direct")
+@app.post("/api/chat-direct")
 async def chat_direct(messages: dict):
-    print(messages)
     chat_messages = messages["messages"]
-    print("L5")
-    print(chat_messages)
     prompt = get_prompt(
         "chat_direct", user_message=chat_messages[-1]["content"], chat_history=chat_messages[:-1])
     response = model.generate_content(prompt)
-    print("History")
-    print(chat_messages[:-1])
-    print("Response")
-    print(response.text)
     return {"response": response.text}
 
 
-@app.post("/chat-context")
+@app.post("/api/chat-context")
 async def chat(messages: dict):
     user_message = messages["messages"][-1]["content"]
 
@@ -164,7 +140,7 @@ async def chat(messages: dict):
         return {"response": response.text}
 
 
-@app.post("/summarize")
+@app.post("/api/summarize")
 async def summarize(request: SummarizeRequest):
     file_name = request.file_name
 
@@ -184,3 +160,10 @@ async def summarize(request: SummarizeRequest):
         return {"response": "error", "detail": f"An error occurred: {e}"}
 
     return {"response": "success"}
+
+@app.get("/", response_class=FileResponse)
+async def serve_frontend():
+    return FileResponse("build/index.html")
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8080)

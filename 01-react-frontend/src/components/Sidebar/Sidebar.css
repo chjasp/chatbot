@@ -57,6 +57,11 @@
   cursor: pointer;
 }
 
+.sidebar .recent-entry.active {
+  background-color: #2e2f2f; /* Or any color you prefer for the active chat */
+  color: #ffffff; /* Change text color for better contrast */
+}
+
 .sidebar .recent-entry .chat-info {
   display: flex;
   align-items: center;

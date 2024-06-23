@@ -119,12 +119,17 @@ const ContextProvider = (props) => {
         delete newChats[chatId];
         return newChats;
       });
+  
+      // Handle the case where the active chat is being deleted
       if (activeChatId === chatId) {
-        const remainingChatIds = Object.keys(chats);
+        const remainingChatIds = Object.keys(chats).filter(id => id !== chatId);
         if (remainingChatIds.length > 0) {
           setActiveChatId(remainingChatIds[0]);
         } else {
-          newChat(); // Create a new chat if all chats are deleted
+          // If no chats remain, create a new one
+          const newChatId = uuidv4();
+          setChats(prevChats => ({ ...prevChats, [newChatId]: [] }));
+          setActiveChatId(newChatId);
         }
       }
     } catch (error) {
