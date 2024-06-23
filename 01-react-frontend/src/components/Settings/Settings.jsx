@@ -1,55 +1,55 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useRef, useEffect } from "react";
 import "./Settings.css";
 import { Context } from "../../context/Context";
-import { assets } from "../../assets/assets";
+import Switch from "../Switch/Switch";
 
 const Settings = () => {
-  const { setShowSettings, defaultEndpoint, setDefaultEndpoint } =
-    useContext(Context);
-  const [isChecked, setIsChecked] = useState(
-    defaultEndpoint === "/chat-context"
-  );
+  const { setShowSettings, contextSettings, setContextSettings, setDefaultEndpoint } = useContext(Context);
+  const modalRef = useRef(null);
 
-  // Effect to update isChecked whenever defaultEndpoint changes
+  const contextData = [
+    { name: "Concepts" },
+    { name: "Guides" },
+    { name: "Products" },
+  ];
+
   useEffect(() => {
-    setIsChecked(defaultEndpoint === "/chat-context");
-  }, [defaultEndpoint]);
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        setShowSettings(false);
+      }
+    };
 
-  const handleToggleChange = () => {
-    const newEndpoint = isChecked ? "/chat-direct" : "/chat-context";
-    setIsChecked(!isChecked); // Update the isChecked state first
-    setDefaultEndpoint(newEndpoint); // Then update the context value
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [setShowSettings]);
+
+  useEffect(() => {
+    const anyChecked = Object.values(contextSettings).some(value => value);
+    setDefaultEndpoint(anyChecked ? "/chat-context" : "/chat-direct");
+  }, [contextSettings, setDefaultEndpoint]);
+
+  const handleToggleChange = (name) => {
+    setContextSettings(prev => ({
+      ...prev,
+      [name]: !prev[name]
+    }));
   };
 
   return (
-    <div className="settings-modal">
+    <div className="settings-modal" ref={modalRef}>
       <div className="settings-content">
-        {/* Toggle Switch with Icon and Label */}
-        <div className="setting-item">
-          <img
-            src={assets.cloud_icon}
-            alt="Cloud Icon"
-            className="setting-icon"
-          />
-          <div className="label-switch-container">
-            <label htmlFor="checkContentToggle" className="setting-label">
-              Always Check CES Content
-            </label>
-            <div className="toggle-switch">
-              <input
-                type="checkbox"
-                id="checkContentToggle"
-                checked={isChecked} // Bind to isChecked state
-                onChange={handleToggleChange}
-              />
-              <span className="slider round"></span>
-            </div>
+        {contextData.map((item, index) => (
+          <div className="setting-item" key={index}>
+            <label className="setting-label">{item.name}</label>
+            <Switch
+              checked={contextSettings[item.name]}
+              onChange={() => handleToggleChange(item.name)}
+            />
           </div>
-        </div>
-
-        <div className="apply-button-container">
-          <button onClick={() => setShowSettings(false)}>Apply</button>
-        </div>
+        ))}
       </div>
     </div>
   );

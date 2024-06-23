@@ -5,6 +5,7 @@
   box-sizing: border-box;
   font-family: Outfit;
   color: #CECECE;
+  scroll-behavior: smooth;
 }
 #root{
   min-height: 100vh;

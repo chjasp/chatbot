@@ -1,3 +1,5 @@
+// Main.jsx
+
 import React, { useContext, useRef, useEffect } from "react";
 import "./Main.css";
 import { assets } from "../../assets/assets";
@@ -5,33 +7,39 @@ import { Context } from "../../context/Context";
 import Greeting from "../Greeting/Greeting";
 
 const Main = () => {
-  const { onSent, chats, activeChatId, loading, input, setInput } =
-    useContext(Context);
-
+  const { onSent, chats, activeChatId, loading, input, setInput } = useContext(Context);
   const chatContainerRef = useRef(null);
-  const showGreeting = !activeChatId || chats[activeChatId].length === 0; // No active chat or empty chat
+  const showGreeting = !activeChatId || chats[activeChatId].length === 0;
 
-  // Scroll to the bottom of the chat container whenever the chat history changes
   useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop =
-        chatContainerRef.current.scrollHeight;
+    const chatContainer = chatContainerRef.current;
+    if (chatContainer && chats[activeChatId].length > 0) {
+      const lastMessage = chats[activeChatId][chats[activeChatId].length - 1];
+      if (lastMessage.role === "user") {
+        // Scroll to the new user message
+        const newMessageElement = chatContainer.lastElementChild;
+        if (newMessageElement) {
+          chatContainer.scrollTo({
+            top: newMessageElement.offsetTop - chatContainer.offsetTop,
+            behavior: 'smooth'
+          });
+        }
+      } else {
+        // Scroll to the bottom for assistant messages
+        chatContainer.scrollTo({
+          top: chatContainer.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
     }
-  }, [chats[activeChatId]]); // Update scroll on active chat history change
+  }, [chats, activeChatId]);
 
   const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      if (e.shiftKey) {
-        // Shift + Enter: Insert a newline character
-        console.log("lll");
-        setInput(input + "\n");
-      } else {
-        // Enter only: Send the message
-        if (input.trim() !== "") {
-          onSent();
-        }
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (input.trim() !== "") {
+        onSent();
       }
-      e.preventDefault(); // Prevent default Enter behavior (form submission or newline in single-line input)
     }
   };
 
@@ -41,24 +49,18 @@ const Main = () => {
         <p>CES-GPT</p>
         <img src={assets.user_icon} alt="" />
       </div>
-      <div className="main-container" ref={chatContainerRef}>
+      <div className="main-container">
         {showGreeting ? (
           <Greeting />
         ) : (
-          <div className="result">
+          <div className="result" ref={chatContainerRef}>
             {chats[activeChatId].map((message, index) => (
               <div
                 key={index}
-                className={`message ${
-                  message.role === "user" ? "result-title" : "result-data"
-                }`}
+                className={`message ${message.role === "user" ? "result-title" : "result-data"}`}
               >
                 <img
-                  src={
-                    message.role === "user"
-                      ? assets.user_icon
-                      : assets.gemini_icon
-                  }
+                  src={message.role === "user" ? assets.user_icon : assets.gemini_icon}
                   alt=""
                 />
                 <p
@@ -89,19 +91,12 @@ const Main = () => {
               onKeyDown={handleKeyPress}
             />
             <div>
-              {input ? (
-                <img
-                  onClick={() => onSent()}
-                  src={assets.send_icon}
-                  width={30}
-                  alt=""
-                />
-              ) : null}
+              {input && <img onClick={onSent} src={assets.send_icon} width={30} alt="" />}
             </div>
           </div>
           <p className="bottom-info">
-            CES-GPT-0624 is based on Gemini 1.5 Flash. The most recent CES
-            Guides and Concepts can be added as context.
+            CES-GPT-0624 is based on Gemini 1.5 Flash. CES Guides, Concepts, and
+            Product documentations can be added as context.
           </p>
         </div>
       </div>

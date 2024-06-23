@@ -1,38 +1,29 @@
 .settings-modal {
-  position: absolute; /* Position relative to the sidebar */
-  bottom: 50px;      /* Adjust the position as needed */
-  left: 60px;        /* Adjust the position as needed */
-  background-color: #f0f4f9;
+  position: absolute;
+  bottom: 50px;
+  left: calc(100% + 10px);
+  background-color: #1C1D1D;
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Add a subtle shadow */
-  z-index: 11;      /* Ensure it's above the sidebar */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  color: #CECECE;
+  width: 200px;
+}
+
+.settings-content {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .setting-item {
   display: flex;
+  flex-direction: row;
+  justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
-}
-
-.setting-icon {
-  margin-right: 10px; /* Add spacing to the right of the icon */
 }
 
 .setting-label {
-  flex: 1;
-}
-
-/* Space between label and toggle switch */
-.label-switch-container {
-  display: flex;
-  align-items: center;
-  gap: 10px; /* Adjust the gap value as needed */
-}
-
-
-/* Center the Apply button */
-.apply-button-container {
-  display: flex;
-  justify-content: center; /* Horizontally center */
+  margin-right: 10px;
 }

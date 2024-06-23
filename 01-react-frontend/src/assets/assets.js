@@ -10,7 +10,8 @@ import youtube_icon from './youtube_icon.png'
 import message_icon from './message_icon.png'
 import send_icon from './send_icon.png'
 import gemini_icon from './gemini_icon.png'
-import cloud_icon from './cloud_icon.png'
+import context_icon from './context_icon.png'
+import bin_icon from './bin_icon.png'
 
 export const assets = {
     history_icon,
@@ -25,5 +26,6 @@ export const assets = {
     message_icon,
     send_icon,
     gemini_icon,
-    cloud_icon
+    context_icon,
+    bin_icon
 }

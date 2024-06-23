@@ -1,72 +1,95 @@
+/* Sidebar.css */
+
 .sidebar {
-    min-height: 100vh;
-    display: inline-flex;
-    flex-direction: column;
-    justify-content: space-between;
-    background-color: #1C1D1D;
-    padding: 25px 15px;
+  min-height: 100vh;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: #1c1d1d;
+  padding: 25px 15px;
+  position: relative;
+  overflow: visible;
+  z-index: 1;
 }
 
 .sidebar img {
-    width: 20px;
+  width: 20px;
 }
 
 .sidebar .menu {
-    display: block;
-    margin-left: 10px;
-    cursor: pointer;
+  display: block;
+  margin-left: 10px;
+  cursor: pointer;
 }
 
 .sidebar .new-chat {
-    margin-top: 50px;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 15px;
-    background-color: #242527;
-    border-radius: 50px;
-    font-size: 14px;
-    color: #CECECE;
-    cursor: pointer;
+  margin-top: 50px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 15px;
+  background-color: #242527;
+  border-radius: 50px;
+  font-size: 14px;
+  color: #cecece;
+  cursor: pointer;
 }
 
 .sidebar .recent {
-    display: flex;
-    flex-direction: column;
-    animation: fadeIn 2s;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 2s;
 }
 
-.sidebar .recent-title{
-    margin-top: 30px;
-margin-bottom: 20px;
+.sidebar .recent-title {
+  margin-top: 30px;
+  margin-bottom: 20px;
 }
 
 .sidebar .recent-entry {
-    display: flex;
-    align-items: start;
-    gap: 10px;
-    padding: 10px;
-    padding-right: 40px;
-    border-radius: 50px;
-    color: #282828;
-    cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px;
+  border-radius: 50px;
+  color: #282828;
+  cursor: pointer;
 }
 
-.sidebar .recent-entry:hover {
-    background-color: #2E2F2F;
+.sidebar .recent-entry .chat-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-grow: 1;
+}
+
+.sidebar .recent-entry .delete-icon {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar .recent-entry:hover .delete-icon {
+  opacity: 1;
+}
+
+.sidebar .recent-entry .delete-icon:hover {
+  color: #ff4d4f; /* or any color you prefer for delete action */
 }
 
 .sidebar .bottom {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
+  position: relative; /* Add this */
 }
 
 .sidebar .bottom-item {
-    padding-right: 10px;
-    cursor: pointer;
+  padding-right: 10px;
+  cursor: pointer;
 }
-@media (max-width:600px) {
-    .sidebar{
-        display: none;
-    }
+
+@media (max-width: 600px) {
+  .sidebar {
+    display: none;
+  }
 }

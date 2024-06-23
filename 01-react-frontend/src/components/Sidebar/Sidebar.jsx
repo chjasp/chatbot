@@ -1,16 +1,33 @@
+// Sidebar.jsx
+
 import React, { useContext, useState } from "react";
 import "./Sidebar.css";
 import { assets } from "../../assets/assets";
 import { Context } from "../../context/Context";
 import Settings from "../Settings/Settings";
+import Help from "../Help/Help";
 
 const Sidebar = () => {
   const [extended, setExtended] = useState(false);
-  const { chats, activeChatId, setActiveChatId, newChat, showSettings, setShowSettings } =
-    useContext(Context);
+  const {
+    chats,
+    activeChatId,
+    setActiveChatId,
+    newChat,
+    showSettings,
+    setShowSettings,
+    showHelp,
+    setShowHelp,
+    deleteChat,
+  } = useContext(Context);
 
   const handleChatClick = (chatId) => {
     setActiveChatId(chatId);
+  };
+
+  const handleDeleteChat = (e, chatId) => {
+    e.stopPropagation();
+    deleteChat(chatId);
   };
 
   return (
@@ -32,22 +49,35 @@ const Sidebar = () => {
             {Object.keys(chats).map((chatId) => (
               <div
                 key={chatId}
-                onClick={() => handleChatClick(chatId)}
                 className={`recent-entry ${
                   activeChatId === chatId ? "active" : ""
                 }`}
               >
-                <img src={assets.message_icon} alt="" />
-                <p>
-                  {chats[chatId][0]?.content?.slice(0, 18) || "New Chat"}...
-                </p>
+                <div
+                  className="chat-info"
+                  onClick={() => handleChatClick(chatId)}
+                >
+                  <img src={assets.message_icon} alt="" />
+                  <p>
+                    {chats[chatId][0]?.content?.slice(0, 18) || "New Chat"} ...
+                  </p>
+                </div>
+                <img
+                  src={assets.bin_icon}
+                  alt="Delete"
+                  className="delete-icon"
+                  onClick={(e) => handleDeleteChat(e, chatId)}
+                />
               </div>
             ))}
           </div>
         )}
       </div>
       <div className="bottom">
-        <div className="bottom-item recent-entry">
+        <div
+          className="bottom-item recent-entry"
+          onClick={() => setShowHelp(true)}
+        >
           <img src={assets.question_icon} alt="" />
           {extended ? <p>Help</p> : null}
         </div>
@@ -55,12 +85,12 @@ const Sidebar = () => {
           className="bottom-item recent-entry"
           onClick={() => setShowSettings(true)}
         >
-          <img src={assets.setting_icon} alt="" />
-          {extended ? <p>Settings</p> : null}
+          <img src={assets.context_icon} alt="" />
+          {extended ? <p>Context</p> : null}
         </div>
-
-        {showSettings && <Settings />}
       </div>
+      {showHelp && <Help />}
+      {showSettings && <Settings />}
     </div>
   );
 };

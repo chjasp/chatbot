@@ -7,16 +7,16 @@ const Greeting = () => {
 
   const cardData = [
     {
-      text: "Suggest beautiful places to see on an upcoming road trip",
+      text: "Our Cloud Run service is experiencing cold start latency issues. What strategies can I employ to mitigate this?",
     },
     {
-      text: "Briefly summarize this concept: urban planning",
+      text: "My Dataflow job is failing with out of memory errors. What steps can I take to optimize the job's resource usage?",
     },
     {
-      text: "Brainstorm team bonding activities for our work retreat",
+      text: "My Terraform apply is failing with a 'resource already exists' error, but I can't see the resource in the console. What could be causing this?",
     },
     {
-      text: "Improve the readability of the following code",
+      text: "My Cloud Function is timing out when making requests to an on-premises server. What steps should I take to diagnose and fix this issue?",
     },
   ];
 
