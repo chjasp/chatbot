@@ -23,6 +23,9 @@ bucket = storage_client.bucket(os.environ["BUCKET_NAME"])
 model = GenerativeModel(model_name=os.environ["GEMINI_MODEL"])
 db = firestore.Client(
     project=os.environ["PROJECT_ID"], database=os.environ["FIRESTORE_DB"])
+CHATS_COLLECTION = os.environ["CHATS_COLLECTION"]
+DOC_METADATA_COLLECTION = os.environ["DOC_METADATA_COLLECTION"]
+
 
 app = FastAPI()
 app.mount('/static', StaticFiles(directory="./build/static"), 'static')
@@ -46,7 +49,7 @@ def get_user_id(token: str = "chjasp"):
 
 @app.post("/api/save-chat")
 async def save_chat(chat_data: dict, user_id: str = Depends(get_user_id)):
-    chat_ref = db.collection("chats").document(user_id)
+    chat_ref = db.collection(CHATS_COLLECTION).document(user_id)
     # Add a timestamp to the chat
     chat_data_with_timestamp = {
         chat_id: {
@@ -59,7 +62,7 @@ async def save_chat(chat_data: dict, user_id: str = Depends(get_user_id)):
 
 @app.get("/api/get-chat")
 async def get_chat(user_id: str = Depends(get_user_id)):
-    chat_ref = db.collection("chats").document(user_id)
+    chat_ref = db.collection(CHATS_COLLECTION).document(user_id)
     chat_doc = chat_ref.get()
     if chat_doc.exists:
         user_chats = chat_doc.to_dict()
@@ -72,7 +75,7 @@ async def get_chat(user_id: str = Depends(get_user_id)):
 
 @app.delete("/api/delete-chat/{chat_id}")
 async def delete_chat(chat_id: str, user_id: str = Depends(get_user_id)):
-    chat_ref = db.collection("chats").document(user_id)
+    chat_ref = db.collection(CHATS_COLLECTION).document(user_id)
     chat_doc = chat_ref.get()
     if chat_doc.exists:
         user_chats = chat_doc.to_dict()
@@ -96,7 +99,7 @@ async def chat(messages: dict):
     user_message = messages["messages"][-1]["content"]
 
     # Retrieve document summaries from Firestore
-    summaries_ref = db.collection("doc-metadata")
+    summaries_ref = db.collection(DOC_METADATA_COLLECTION)
     summaries = [doc.to_dict() for doc in summaries_ref.stream()]
 
     # Format summaries for Gemini prompt
@@ -154,7 +157,7 @@ async def summarize(request: SummarizeRequest):
 
         response = model.generate_content(prompt)
 
-        doc_ref = db.collection("doc-metadata").document(file_name)
+        doc_ref = db.collection(DOC_METADATA_COLLECTION).document(file_name)
         doc_ref.set({"summary": response.text, "file_name": file_name})
     except Exception as e:
         return {"response": "error", "detail": f"An error occurred: {e}"}
